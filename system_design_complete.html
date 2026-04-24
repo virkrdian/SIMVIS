@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rancangan Program Lengkap - Project Magang</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; color: #333; }
+    h1 { text-align: center; margin-bottom: 30px; color: #2c3e50; }
+    .section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px; }
+    h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; color: #34495e; }
+    .controls { margin-bottom: 15px; }
+    button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    button:hover { background-color: #0056b3; }
+    .diagram-container { overflow: auto; display: flex; justify-content: center; min-height: 400px; }
+    .error-log { color: red; background: #ffe6e6; padding: 10px; border-radius: 5px; margin-bottom: 10px; display: none; white-space: pre-wrap; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>Rancangan Program Sistem Monitoring</h1>
+
+  <!-- 1. USE CASE DIAGRAM -->
+  <div class="section">
+    <h2>1. Use Case Diagram (Interaksi User & Sistem)</h2>
+    <div id="err-usecase" class="error-log"></div>
+    <div class="controls"><button onclick="downloadPNG('usecase-div', 'UseCase_Diagram.png')">Download Use Case PNG</button></div>
+    <div class="diagram-container" id="usecase-div"></div>
+  </div>
+
+  <!-- 2. CLASS DIAGRAM -->
+  <div class="section">
+    <h2>2. Class Diagram (Struktur Data Database)</h2>
+    <div id="err-class" class="error-log"></div>
+    <div class="controls"><button onclick="downloadPNG('class-div', 'Class_Diagram.png')">Download Class Diagram PNG</button></div>
+    <div class="diagram-container" id="class-div"></div>
+  </div>
+
+  <!-- 3. FLOWCHART (Activity Diagram) -->
+  <div class="section">
+    <h2>3. Flowchart Alur Kerja (Manager)</h2>
+    <div id="err-flow" class="error-log"></div>
+    <div class="controls"><button onclick="downloadPNG('flow-div', 'Flowchart_Manager.png')">Download Flowchart PNG</button></div>
+    <div class="diagram-container" id="flow-div"></div>
+  </div>
+
+  <script>
+    // --- DEFINISI DIAGRAM ---
+
+    // 1. Use Case (Optimized Safe Version)
+    const useCaseDef = `
+    flowchart LR
+      AR("fa:fa-user AR Sales\n(Field Staff)")
+      OF("fa:fa-user-tie Officer\n(Admin)")
+      MG("fa:fa-user-secret Manager\n(Supervisor)")
+
+      subgraph System ["Sistem Informasi Monitoring"]
+        direction TB
+        Login(["fa:fa-key Login Sistem"])
+        Logout(["fa:fa-sign-out-alt Logout"])
+        Profile(["fa:fa-id-card Update Profil"])
+        Attend(["fa:fa-calendar-check Absensi Kehadiran"])
+        CheckIn(["fa:fa-map-marker-alt Clock In"])
+        CheckOut(["fa:fa-map-marker-alt Clock Out"])
+        ViewTask(["fa:fa-list-ul Lihat Daftar Tugas"])
+        ExecTask(["fa:fa-check-double Eksekusi Tugas"])
+        ManageTask(["fa:fa-tasks Kelola Data Tugas"])
+        ImportTask(["fa:fa-file-import Import Tugas"])
+        ManualTask(["fa:fa-edit Input Manual"])
+        Segment(["fa:fa-map Kelola Segmen"])
+        UserMgmt(["fa:fa-users-cog Kelola User"])
+        Analytics(["fa:fa-chart-line Dashboard Analitik"])
+        Export(["fa:fa-file-export Export Laporan"])
+      end
+
+      classDef actorStyle fill:aliceblue,stroke:navy,stroke-width:2px,color:navy,font-weight:bold;
+      classDef ucStyle fill:white,stroke:black,stroke-width:2px,stroke-dasharray:0;
+      class AR,OF,MG actorStyle;
+      class Login,Logout,Profile,Attend,CheckIn,CheckOut,ViewTask,ExecTask,ManageTask,ImportTask,ManualTask,Segment,UserMgmt,Analytics,Export ucStyle;
+
+      AR ====> Login
+      AR ====> Profile
+      AR ====> Attend
+      Attend -.-> CheckIn
+      Attend -.-> CheckOut
+      AR ====> ViewTask
+      AR ====> ExecTask
+      AR ====> Logout
+
+      OF ====> Login
+      OF ====> Profile
+      OF ====> ViewTask
+      OF ====> ManageTask
+      ManageTask -.-> ImportTask
+      ManageTask -.-> ManualTask
+      OF ====> Segment
+      OF ====> UserMgmt
+      OF ====> Logout
+
+      MG ====> Login
+      MG ====> Profile
+      MG ====> Analytics
+      MG ====> ViewTask
+      MG ====> Export
+      MG ====> UserMgmt
+      MG ====> Segment
+      MG ====> Logout
+      
+      linkStyle default stroke-width:2px,stroke:black;
+    `;
+
+    // 2. Class Diagram (Inferred from TaskController & User Model)
+    const classDef = `
+    classDiagram
+      class User {
+        +ObjectId _id
+        +String name
+        +String email
+        +String password
+        +String role
+        +String employeeId
+        +String agentCode
+        +login()
+        +logout()
+      }
+
+      class Task {
+        +ObjectId _id
+        +String title
+        +String description
+        +String location
+        +Number reward
+        +Number latitude
+        +Number longitude
+        +String segment
+        +String status
+        +Date deadline
+        +String priority
+        +ObjectId assignedTo
+        +ObjectId completedBy
+        +assign(userId)
+        +updateStatus(newStatus)
+      }
+
+      class Attendance {
+        +ObjectId _id
+        +ObjectId userId
+        +Date clockInTime
+        +Date clockOutTime
+        +String locationIn
+        +String locationOut
+        +recordIn()
+        +recordOut()
+      }
+
+      class Segment {
+        +ObjectId _id
+        +String name
+        +String area
+      }
+
+      User "1" --> "*" Task : assignedTo
+      User "1" --> "*" Task : completedBy
+      User "1" --> "*" Attendance : records
+      Task "*" --> "1" Segment : belongs_to
+    `;
+
+    // 3. Flowchart Manager (Safe Version)
+    const flowDef = `
+    flowchart TD
+      Start((Mulai)) --> Login[Login Sistem]
+      Login --> Auth{Valid?}
+      Auth -- No --> Login
+      Auth -- Yes --> Dash[Dashboard Manager]
+      
+      Dash --> CheckAnalytics{Lihat Analytics?}
+      CheckAnalytics -- Yes --> ViewAnalytics[Lihat Grafik & Statistik]
+      ViewAnalytics --> Dash
+      
+      CheckAnalytics -- No --> CheckTasks{Kelola Tugas?}
+      CheckTasks -- Yes --> MonitorTasks[Monitoring Tugas]
+      MonitorTasks --> CheckExport{Export Laporan?}
+      CheckExport -- Yes --> DoExport[Download PDF/Excel]
+      DoExport --> MonitorTasks
+      CheckExport -- No --> MonitorTasks
+      MonitorTasks --> Dash
+      
+      CheckTasks -- No --> CheckUsers{Kelola User?}
+      CheckUsers -- Yes --> ManageUsers[CRUD User]
+      ManageUsers --> Dash
+      
+      CheckUsers -- No --> Logout[Logout]
+      Logout --> End((Selesai))
+
+      classDef process fill:white,stroke:black,stroke-width:2px;
+      classDef decision fill:lightyellow,stroke:orange,stroke-width:2px;
+      classDef term fill:black,stroke:black,color:white;
+      
+      class Start,End term;
+      class Login,Dash,ViewAnalytics,MonitorTasks,DoExport,ManageUsers,Logout process;
+      class Auth,CheckAnalytics,CheckTasks,CheckExport,CheckUsers decision;
+      
+      linkStyle default stroke-width:2px,stroke:black;
+    `;
+
+    // --- RENDER ENGINE ---
+    document.addEventListener('DOMContentLoaded', function() {
+      mermaid.initialize({ 
+        startOnLoad: false, 
+        theme: 'base',
+        themeVariables: { lineColor: 'black', lineWidth: '2px' },
+        securityLevel: 'loose',
+        flowchart: { htmlLabels: true, curve: 'basis' }
+      });
+
+      renderDiagram('usecase-div', useCaseDef, 'err-usecase');
+      renderDiagram('class-div', classDef, 'err-class');
+      renderDiagram('flow-div', flowDef, 'err-flow');
+    });
+
+    function renderDiagram(id, def, errId) {
+      const element = document.getElementById(id);
+      mermaid.render(id + '-svg', def).then((result) => {
+        element.innerHTML = result.svg;
+        // Post-process SVG styling if needed
+        const svg = element.querySelector('svg');
+        if(svg) {
+          svg.style.maxWidth = '100%';
+          svg.style.height = 'auto';
+        }
+      }).catch(err => {
+        document.getElementById(errId).style.display = 'block';
+        document.getElementById(errId).innerText = "Error: " + err.message;
+      });
+    }
+
+    function downloadPNG(divId, filename) {
+      const div = document.getElementById(divId);
+      const svg = div.querySelector('svg');
+      if (!svg) { alert('Diagram belum siap'); return; }
+      
+      // Get SVG Data
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+
+      // Add XML namespaces if missing
+      if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      if (!source.match(/^<svg[^>]+xmlns:xlink/)) {
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+      }
+
+      const svgBlob = new Blob([source], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      const url = URL.createObjectURL(svgBlob);
+
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const scale = 4; // High Resolution
+        const rect = svg.getBoundingClientRect();
+        
+        // Fallback if size is 0 (e.g. hidden element), use default 800x600
+        const width = (rect.width > 0 ? rect.width : 800) * scale;
+        const height = (rect.height > 0 ? rect.height : 600) * scale;
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw image
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const a = document.createElement('a');
+        a.download = filename;
+        a.href = canvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        URL.revokeObjectURL(url);
+      };
+      
+      img.onerror = function() { alert("Gagal konversi ke PNG"); };
+      
+      img.src = url;
+    }
+  </script>
+</body>
+</html>

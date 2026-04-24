@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Use Case Diagram - Project Magang</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px;
+        background-color: #f8fafc;
+      }
+      .container {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+        overflow-x: auto;
+        margin-bottom: 20px;
+        /* Ensure the container has size */
+        min-height: 400px;
+        min-width: 600px;
+        display: flex;
+        justify-content: center;
+      }
+      h1 {
+        color: #1e293b;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      p {
+        color: #64748b;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .btn {
+        background-color: #4338ca;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:hover {
+        background-color: #3730a3;
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      /* Hide the source code pre block initially to avoid flash of unstyled content */
+      pre.mermaid {
+        display: none;
+      }
+      /* When mermaid renders, it replaces pre with svg, so we don't need to unhide it manually. 
+           However, mermaid usually inserts the SVG after or inside. 
+           The standard way: <pre class="mermaid"> turns into <svg> 
+        */
+    </style>
+  </head>
+  <body>
+    <h1>Use Case Diagram</h1>
+    <p>Sistem Informasi Monitoring Tugas & Absensi Lapangan</p>
+
+    <div class="controls">
+      <button class="btn" onclick="downloadImage('png')">
+        📷 Download FullHD (PNG)
+      </button>
+      <button class="btn" onclick="downloadImage('svg')">
+        📄 Download Vector (SVG)
+      </button>
+    </div>
+
+    <div class="container">
+      <!-- Using pre to preserve whitespace and newlines is crucial -->
+      <pre class="mermaid">
+usecaseDiagram
+    actor "AR / Sales<br/>(Field Staff)" as AR
+    actor "Officer<br/>(Admin Operasional)" as OF
+    actor "Manager<br/>(Supervisor)" as MG
+
+    rectangle "Sistem Aplikasi" {
+        %% Authentication Group
+        usecase "Login Sistem" as UC_Login
+        usecase "Logout" as UC_Logout
+        usecase "Update Profil" as UC_Profile
+
+        %% Attendance Group
+        usecase "Absensi Kehadiran" as UC_Attend
+        usecase "Clock In (GPS)" as UC_In
+        usecase "Clock Out (GPS)" as UC_Out
+
+        %% Task Operations
+        usecase "Lihat Daftar Tugas" as UC_ViewTask
+        usecase "Eksekusi Tugas<br/>(Update Status & Bukti)" as UC_ExecTask
+
+        %% Management Operations
+        usecase "Kelola Data Tugas" as UC_ManageTask
+        usecase "Import Tugas (CSV)" as UC_Import
+        usecase "Input Tugas Manual" as UC_AddManual
+        
+        usecase "Kelola Segmen Wilayah" as UC_Segment
+        usecase "Kelola Data User" as UC_User
+        
+        %% Reporting
+        usecase "Lihat Dashboard Analitik" as UC_Analytics
+        usecase "Export Laporan<br/>(PDF/Excel)" as UC_Export
+    }
+
+    %% Relations for AR/Sales
+    AR --> UC_Login
+    AR --> UC_Profile
+    AR --> UC_Attend
+    UC_Attend ..> UC_In : &lt;&lt;include&gt;&gt;
+    UC_Attend ..> UC_Out : &lt;&lt;include&gt;&gt;
+    AR --> UC_ViewTask
+    AR --> UC_ExecTask
+    AR --> UC_Logout
+
+    %% Relations for Officer
+    OF --> UC_Login
+    OF --> UC_Profile
+    OF --> UC_ViewTask
+    OF --> UC_ManageTask
+    UC_ManageTask ..> UC_Import : &lt;&lt;include&gt;&gt;
+    UC_ManageTask ..> UC_AddManual : &lt;&lt;include&gt;&gt;
+    OF --> UC_Segment
+    OF --> UC_User
+    OF --> UC_Logout
+
+    %% Relations for Manager
+    MG --> UC_Login
+    MG --> UC_Profile
+    MG --> UC_Analytics
+    MG --> UC_ViewTask
+    MG --> UC_Export
+    MG --> UC_User
+    MG --> UC_Segment
+    MG --> UC_Logout
+
+    %% Notes
+    note right of UC_User
+        Officer: Create AR/Sales
+        Manager: Create Officer & Delete All
+    end note
+        </pre>
+    </div>
+
+    <script>
+      // Initialize Mermaid
+      mermaid.initialize({
+        startOnLoad: true,
+        theme: "base",
+        securityLevel: "loose",
+        flowchart: { useMaxWidth: true, htmlLabels: true },
+        themeVariables: {
+          primaryColor: "#e0e7ff",
+          primaryBorderColor: "#4338ca",
+          primaryTextColor: "#1e1b4b",
+          lineColor: "#4338ca",
+          secondaryColor: "#f3f4f6",
+          tertiaryColor: "#ffffff",
+        },
+      });
+
+      // Download Logic
+      function downloadImage(format) {
+        // Mermaid converts the <pre> tag into a <div> containing the <svg>
+        // We need to find the svg inside the container
+        const svgElement = document.querySelector(".container svg");
+
+        if (!svgElement) {
+          alert(
+            "Diagram belum selesai dimuat atau terjadi error. Silakan refresh halaman."
+          );
+          return;
+        }
+
+        const svgData = new XMLSerializer().serializeToString(svgElement);
+        const blob = new Blob([svgData], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+
+        if (format === "svg") {
+          triggerDownload(url, "usecase_diagram.svg");
+        } else {
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement("canvas");
+
+            // Get dimensions
+            let width, height;
+            const viewBox = svgElement.getAttribute("viewBox");
+
+            if (viewBox) {
+              const parts = viewBox.split(" ");
+              width = parseFloat(parts[2]);
+              height = parseFloat(parts[3]);
+            } else {
+              const bbox = svgElement.getBoundingClientRect();
+              width = bbox.width;
+              height = bbox.height;
+            }
+
+            // Scale factor for FullHD/4K quality
+            const scale = 4;
+
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(scale, scale);
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const pngUrl = canvas.toDataURL("image/png");
+            triggerDownload(pngUrl, "usecase_diagram_hd.png");
+          };
+          img.onerror = function () {
+            alert("Gagal memproses gambar untuk download.");
+          };
+          img.src = url;
+        }
+      }
+
+      function triggerDownload(url, filename) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    </script>
+  </body>
+</html>

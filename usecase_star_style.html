@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Use Case Diagram Style - SIMVIS</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.4.3/mermaid.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f8fafc; padding: 20px; color: #333; }
+    h1 { text-align: center; color: #1e293b; margin-bottom: 10px; }
+    p { text-align: center; color: #64748b; margin-bottom: 30px; }
+    
+    .diagram-container {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 600px;
+      overflow: auto;
+    }
+    
+    button {
+      padding: 12px 24px;
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 20px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    button:hover { background-color: #4338ca; transform: translateY(-2px); }
+    
+    .error-log { color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin-bottom: 15px; width: 100%; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>Use Case Diagram: SIMVIS Architecture</h1>
+  <p>Visualisasi struktur fitur berdasarkan referensi gaya "Star Burst"</p>
+
+  <div class="diagram-container">
+    <div id="error-log" class="error-log"></div>
+    <button onclick="downloadPNG()"><i class="fas fa-download"></i> Download Full HD PNG</button>
+    <div id="mermaid-diagram" class="mermaid">
+      <span style="font-style:italic; color:#94a3b8;">Loading Diagram...</span>
+    </div>
+  </div>
+
+  <script>
+    // Konfigurasi diagram mirip dengan gambar referensi:
+    // Actor di kiri -> Cabang Utama -> Cabang Sub (Include)
+    const graphDef = `
+    flowchart LR
+      %% --- ACTOR UTAMA ---
+      Actor(("fa:fa-users User System<br/>(Manager, Officer, Sales)"))
+
+      %% --- MODUL UTAMA (LEVEL 1) ---
+      Auth([Autentikasi &<br/>Profil])
+      Task([Manajemen<br/>Tugas])
+      Ops([Operasional<br/>Lapangan])
+      Monitor([Monitoring &<br/>Laporan])
+
+      %% --- RELASI ACTOR KE MODUL ---
+      Actor ==> Auth
+      Actor ==> Task
+      Actor ==> Ops
+      Actor ==> Monitor
+
+      %% --- SUB MODUL (LEVEL 2 - INCLUDE) ---
+      
+      %% Group: Autentikasi
+      Auth -.->|<< include >>| Login([Login Sistem])
+      Auth -.->|<< include >>| Logout([Logout])
+      Auth -.->|<< include >>| Profile([Update Profil])
+
+      %% Group: Manajemen Tugas
+      Task -.->|<< include >>| CreateTask([Input Task Baru])
+      Task -.->|<< include >>| ListTask([Lihat Daftar Tugas])
+      Task -.->|<< include >>| ManageUser([Kelola User])
+
+      %% Group: Operasional
+      Ops -.->|<< include >>| Visit([Kunjungan])
+      Ops -.->|<< include >>| GPS([Navigasi GPS])
+      Ops -.->|<< include >>| Status([Update Status])
+      Ops -.->|<< include >>| Upload([Upload Foto])
+
+      %% Group: Monitoring
+      Monitor -.->|<< include >>| Dash([Dashboard Realtime])
+      Monitor -.->|<< include >>| Chart([Grafik Analitik])
+      Monitor -.->|<< include >>| Report([Rekap Laporan])
+
+      %% --- STYLING ---
+      %% Actor Style
+      style Actor fill:#1e293b,stroke:#334155,stroke-width:4px,color:#fff,font-weight:bold
+
+      %% Main Module Style (Oval Besar)
+      classDef mainModule fill:#eff6ff,stroke:#2563eb,stroke-width:3px,color:#1e40af,font-weight:bold
+      class Auth,Task,Ops,Monitor mainModule
+
+      %% Sub Module Style (Oval Kecil)
+      classDef subModule fill:#fff,stroke:#64748b,stroke-width:2px,stroke-dasharray: 5 5,color:#334155
+      class Login,Logout,Profile,CreateTask,ListTask,ManageUser,Visit,GPS,Status,Upload,Dash,Chart,Report subModule
+
+      %% Link Style
+      linkStyle default stroke:#94a3b8,stroke-width:2px
+    `;
+
+    window.onload = function() {
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'base',
+          flowchart: { 
+            htmlLabels: true, 
+            curve: 'basis', // Kurva halus seperti mindmap
+            rankSpacing: 80, // Jarak antar level
+            nodeSpacing: 30  // Jarak antar node
+          }
+        });
+
+        const element = document.getElementById('mermaid-diagram');
+        const svgId = 'svg-usecase-' + Date.now();
+        
+        mermaid.render(svgId, graphDef, (svgCode) => {
+          element.innerHTML = svgCode;
+          const svg = element.querySelector('svg');
+          if(svg) {
+            svg.style.maxWidth = '100%';
+            svg.style.height = 'auto';
+            svg.style.fontFamily = 'Segoe UI, sans-serif';
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+        const errDiv = document.getElementById('error-log');
+        errDiv.style.display = 'block';
+        errDiv.innerText = "Error: " + err.message;
+      }
+    };
+
+    function downloadPNG() {
+      const div = document.getElementById('mermaid-diagram');
+      const svg = div.querySelector('svg');
+      
+      if (!svg) { alert('Diagram belum siap.'); return; }
+
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svg);
+      
+      // Fix namespaces
+      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+
+      const img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+      
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const scale = 3; // High Res
+        const rect = svg.getBoundingClientRect();
+        
+        canvas.width = (rect.width + 100) * scale;
+        canvas.height = (rect.height + 100) * scale;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw centered
+        const offsetX = (canvas.width - (rect.width * scale)) / 2;
+        const offsetY = (canvas.height - (rect.height * scale)) / 2;
+        
+        ctx.drawImage(img, offsetX, offsetY, rect.width * scale, rect.height * scale);
+        
+        const a = document.createElement('a');
+        a.download = 'SIMVIS_Usecase_Star_HD.png';
+        a.href = canvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+    }
+  </script>
+</body>
+</html>

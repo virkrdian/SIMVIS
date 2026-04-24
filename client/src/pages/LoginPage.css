@@ -1,0 +1,62 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(
+    to bottom,
+    #bbdefb,
+    #1976d2
+  ); /* biru muda ke biru tua */
+  font-family: "Segoe UI", sans-serif;
+}
+
+.login-box {
+  background-color: white;
+  padding: 2rem;
+  border: 3px solid #fd2121; /* border tegas */
+  border-radius: 0; /* kotak persegi panjang */
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.25);
+  width: 360px; /* lebar tetap */
+  text-align: center;
+  display: flex;
+  flex-direction: column; /* isi tersusun ke bawah */
+}
+
+.logo {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #1976d2;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  border: 2px solid #1976d2; /* border input tegas */
+  border-radius: 0; /* kotak lurus */
+  font-size: 0.95rem;
+}
+
+.login-button {
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #1976d2;
+  color: white;
+  border: 2px solid #1976d2;
+  border-radius: 0; /* kotak lurus */
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #1565c0;
+}

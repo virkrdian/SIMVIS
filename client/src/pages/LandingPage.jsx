@@ -76,9 +76,10 @@ export default function LandingPage() {
               <span className="text-blue-600">Visual & Sales</span>
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Optimalkan kinerja tim lapangan Anda dengan pelacakan real-time,
-              analitik mendalam, dan manajemen tugas yang efisien dalam satu
-              platform terpadu.
+              SIMVIS membantu tim lapangan bekerja lebih terarah: absensi
+              berbasis lokasi, manajemen tugas end-to-end, pelaporan dengan bukti
+              kunjungan, serta analitik performa yang mudah dibaca—semua dalam
+              satu dashboard.
             </p>
             <div className="flex gap-4">
               <Link
@@ -112,8 +113,8 @@ export default function LandingPage() {
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl font-bold mb-4">Fitur Unggulan</h2>
             <p className="text-gray-600">
-              Dirancang khusus untuk kebutuhan monitoring sales dan task force
-            Perusahaan.
+              Dibangun untuk operasional harian tim lapangan: cepat dipakai,
+              rapi di laporan, dan jelas untuk monitoring.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -123,8 +124,8 @@ export default function LandingPage() {
               </div>
               <h3 className="text-xl font-bold mb-3">Geo-Tagging Akurat</h3>
               <p className="text-gray-600">
-                Pantau lokasi sales dan task force secara real-time dengan
-                integrasi peta interaktif dan validasi radius.
+                Rekam lokasi dan akurasi GPS saat absensi dan kunjungan, lalu
+                tampilkan di peta serta rekap kehadiran untuk officer/manager.
               </p>
             </div>
             <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition">
@@ -134,7 +135,8 @@ export default function LandingPage() {
               <h3 className="text-xl font-bold mb-3">Analitik Performa</h3>
               <p className="text-gray-600">
                 Dashboard visual dengan grafik dan statistik untuk memantau
-                produktivitas tim dan pencapaian target.
+                produktivitas, reward, dan prospek. Cocok untuk evaluasi dan
+                pengambilan keputusan cepat.
               </p>
             </div>
             <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-md transition">
@@ -151,17 +153,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* About Section */}
+      <section id="about" className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-4">Tentang SIMVIS</h2>
+            <p className="text-gray-600 leading-relaxed">
+              SIMVIS (Sales & Visual Monitoring System) adalah platform untuk
+              mengelola aktivitas tim lapangan secara terukur. Mulai dari
+              pembagian task, update progres, absensi berbasis lokasi, hingga
+              pelaporan dengan bukti kunjungan—semuanya terdokumentasi rapi dan
+              siap diekspor menjadi laporan.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimoni / Stats Section */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="container mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-3xl font-bold mb-3">Ringkasan Operasional</h2>
+            <p className="text-blue-100">
+              Gambaran singkat performa dan stabilitas sistem untuk monitoring
+              harian.
+            </p>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold mb-2">100+</div>
+              <div className="text-4xl font-bold mb-2">15</div>
               <div className="text-blue-100">Active Agents</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">50k+</div>
-              <div className="text-blue-100">Tasks Completed</div>
+              <div className="text-4xl font-bold mb-2">45</div>
+              <div className="text-blue-100">Tasks</div>
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">99%</div>
@@ -170,6 +195,52 @@ export default function LandingPage() {
             <div>
               <div className="text-4xl font-bold mb-2">24/7</div>
               <div className="text-blue-100">Monitoring</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-20 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-3xl font-bold mb-3">Kontak</h2>
+            <p className="text-gray-600">
+              Untuk kolaborasi, demo, atau pengembangan lanjutan, hubungi saya:
+            </p>
+          </div>
+          <div className="max-w-2xl mx-auto bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
+                <div className="text-xs font-bold text-gray-500 mb-1">Email</div>
+                <div className="font-semibold text-gray-800 break-words">
+                  vrikifadrian@gmail.com
+                </div>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
+                <div className="text-xs font-bold text-gray-500 mb-1">GitHub</div>
+                <a
+                  href="https://github.com/virkrdian"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-blue-600 hover:underline break-words"
+                >
+                  virkrdian
+                </a>
+              </div>
+              <div className="rounded-xl bg-gray-50 p-4 border border-gray-100">
+                <div className="text-xs font-bold text-gray-500 mb-1">
+                  Instagram
+                </div>
+                <a
+                  href="https://instagram.com/_vrkifdrn11"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-blue-600 hover:underline break-words"
+                >
+                  _vrkifdrn11
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -187,7 +258,7 @@ export default function LandingPage() {
             />
           </div>
           <div className="text-sm">
-            &copy; {new Date().getFullYear()} Perusahaan. All rights
+            &copy; {new Date().getFullYear()} VirTech. All rights
             reserved.
           </div>
         </div>

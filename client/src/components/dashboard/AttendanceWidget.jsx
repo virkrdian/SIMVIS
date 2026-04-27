@@ -34,7 +34,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
   const getLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject("Geolocation not supported");
+        reject("Browser Anda tidak mendukung Geolocation");
       } else {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -44,7 +44,26 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
             });
           },
           (error) => {
-            reject(error.message);
+            let msg = "Gagal mendapatkan lokasi: ";
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                msg += "Izin lokasi ditolak. Silakan aktifkan GPS dan izinkan browser mengakses lokasi.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                msg += "Informasi lokasi tidak tersedia.";
+                break;
+              case error.TIMEOUT:
+                msg += "Waktu permintaan lokasi habis.";
+                break;
+              default:
+                msg += error.message;
+            }
+            reject(msg);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
           }
         );
       }
@@ -54,7 +73,23 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
   const handleClockIn = async () => {
     setLoading(true);
     try {
-      const location = await getLocation();
+      let location = { latitude: null, longitude: null, address: "" };
+      try {
+        const pos = await getLocation();
+        location = {
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
+        };
+      } catch (locErr) {
+        console.warn("Geolocation failed:", locErr);
+        location = {
+          latitude: null,
+          longitude: null,
+          address: String(locErr || "Lokasi tidak tersedia"),
+        };
+      }
+
       const res = await fetch(`${API_URL}/api/attendance/clock-in`, {
         method: "POST",
         headers: {
@@ -62,8 +97,9 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
           ...authHeader,
         },
         body: JSON.stringify({
-          ...location,
-          address: "Location captured", // In real app, reverse geocode here
+          latitude: location.latitude,
+          longitude: location.longitude,
+          address: location.address,
         }),
       });
       const data = await res.json();
@@ -74,7 +110,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
         toast.error(data.message || "Gagal absen masuk");
       }
     } catch (error) {
-      toast.error("Gagal mendapatkan lokasi: " + error);
+      toast.error("Error Sistem: " + (error?.message || String(error)));
     } finally {
       setLoading(false);
     }
@@ -83,7 +119,23 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
   const handleClockOut = async () => {
     setLoading(true);
     try {
-      const location = await getLocation();
+      let location = { latitude: null, longitude: null, address: "" };
+      try {
+        const pos = await getLocation();
+        location = {
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
+        };
+      } catch (locErr) {
+        console.warn("Geolocation failed:", locErr);
+        location = {
+          latitude: null,
+          longitude: null,
+          address: String(locErr || "Lokasi tidak tersedia"),
+        };
+      }
+
       const res = await fetch(`${API_URL}/api/attendance/clock-out`, {
         method: "POST",
         headers: {
@@ -91,8 +143,9 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
           ...authHeader,
         },
         body: JSON.stringify({
-          ...location,
-          address: "Location captured",
+          latitude: location.latitude,
+          longitude: location.longitude,
+          address: location.address,
         }),
       });
       const data = await res.json();
@@ -103,7 +156,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
         toast.error(data.message || "Gagal absen pulang");
       }
     } catch (error) {
-      toast.error("Gagal mendapatkan lokasi: " + error);
+      toast.error("Error Sistem: " + (error?.message || String(error)));
     } finally {
       setLoading(false);
     }

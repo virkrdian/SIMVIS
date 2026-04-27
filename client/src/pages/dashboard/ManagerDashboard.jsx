@@ -34,7 +34,8 @@ export default function ManagerDashboard() {
     email: "",
     password: "",
   });
-  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'tasks', 'officers'
+  const [activeTab, setActiveTab] = useState("overview"); // 'overview', 'tasks', 'officers', 'attendance'
+  const [attendances, setAttendances] = useState([]);
   const authHeader = {
     Authorization: `Bearer ${localStorage.getItem("token")}`,
   };
@@ -266,14 +267,32 @@ export default function ManagerDashboard() {
       .catch(() => setSegments([]));
   };
 
+  const fetchAttendances = () => {
+    fetch(`${API_URL}/api/attendance/all-today`, { headers: authHeader })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setAttendances(data);
+        } else {
+          setAttendances([]);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        setAttendances([]);
+      });
+  };
+
   useEffect(() => {
     fetchUsers();
     fetchTasks();
     fetchSegments();
+    fetchAttendances();
     const interval = setInterval(() => {
       fetchUsers();
       fetchTasks();
       fetchSegments();
+      fetchAttendances();
     }, 5000);
     return () => clearInterval(interval);
   }, []);
@@ -491,6 +510,16 @@ export default function ManagerDashboard() {
             📊 Analytics
           </button>
           <button
+            onClick={() => setActiveTab("attendance")}
+            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              activeTab === "attendance"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            🕒 Kehadiran
+          </button>
+          <button
             onClick={() => setActiveTab("tasks")}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               activeTab === "tasks"
@@ -616,6 +645,102 @@ export default function ManagerDashboard() {
                 </div>
               </div>
               <AnalyticsDashboard tasks={tasks} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "attendance" && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Rekapitulasi Kehadiran Hari Ini</h2>
+              <div className="text-sm text-gray-500">{attendances.length} Personel Tercatat</div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 font-medium">
+                  <tr>
+                    <th className="px-4 py-3">Nama</th>
+                    <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3">NIP/EmployeeID</th>
+                    <th className="px-4 py-3">Jam Masuk</th>
+                    <th className="px-4 py-3">Jam Pulang</th>
+                    <th className="px-4 py-3">Lokasi Terakhir</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {attendances.length > 0 ? (
+                    attendances.map((att, i) => (
+                      <tr key={i} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800">{att.user?.name || 'Unknown'}</td>
+                        <td className="px-4 py-3 uppercase text-xs">
+                          <span className={`px-2 py-0.5 rounded-full ${
+                            att.user?.role === 'manager' ? 'bg-purple-100 text-purple-700' :
+                            att.user?.role === 'officer' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {att.user?.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500">{att.user?.employeeId || '-'}</td>
+                        <td className="px-4 py-3 text-blue-600 font-bold">
+                          {att.clockIn ? new Date(att.clockIn.time).toLocaleTimeString() : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-red-600 font-bold">
+                          {att.clockOut ? new Date(att.clockOut.time).toLocaleTimeString() : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-gray-500 max-w-xs truncate">
+                          {(() => {
+                            const loc = att.clockOut?.location || att.clockIn?.location;
+                            const lat = loc?.latitude;
+                            const lon = loc?.longitude;
+                            const hasCoords =
+                              Number.isFinite(Number(lat)) && Number.isFinite(Number(lon));
+                            const address = String(loc?.address || "").trim();
+                            const isPlaceholderAddress =
+                              address.toLowerCase().startsWith("lat:") ||
+                              address.toLowerCase().includes("(manual/gps)");
+                            const normalizedLat = Number(lat);
+                            const normalizedLon = Number(lon);
+                            const isZeroCoords = normalizedLat === 0 && normalizedLon === 0;
+
+                            const url =
+                              address && !isPlaceholderAddress
+                                ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                    address
+                                  )}`
+                                : hasCoords && !isZeroCoords
+                                  ? `https://www.google.com/maps?q=${encodeURIComponent(
+                                      `${normalizedLat},${normalizedLon}`
+                                    )}`
+                                  : null;
+                            const label =
+                              address || (hasCoords ? `${normalizedLat}, ${normalizedLon}` : "-");
+
+                            if (!url) return label;
+
+                            return (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-blue-600 hover:underline"
+                                title={address || `${normalizedLat}, ${normalizedLon}`}
+                              >
+                                {label}
+                              </a>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-10 text-center text-gray-500 italic">
+                        Belum ada data kehadiran untuk hari ini
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         )}

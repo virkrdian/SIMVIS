@@ -39,8 +39,7 @@ const connectDB = async () => {
     await mongoose.connect(mongoUri);
     console.log("✅ MongoDB connected");
   } catch (err) {
-    console.error("❌ DB connection error:", err);
-    process.exit(1);
+    throw err;
   }
 };
 

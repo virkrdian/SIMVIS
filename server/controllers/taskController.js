@@ -147,14 +147,24 @@ exports.completeTask = async (req, res) => {
     const { reportType, reportData, picName, picPhone, notes, prospects } =
       req.body;
     const files = req.files || {};
-    const evidenceFront = files.evidenceFront?.[0]?.path || null;
-    const evidenceSide = files.evidenceSide?.[0]?.path || null;
-    const evidenceWithPic = files.evidenceWithPic?.[0]?.path || null;
-    const evidence =
-      files.evidence?.[0]?.path ||
-      evidenceFront ||
-      evidenceSide ||
-      evidenceWithPic ||
+    const buildEvidenceFile = (file) => {
+      if (!file || !file.buffer) return null;
+      return {
+        data: file.buffer,
+        contentType: file.mimetype,
+        filename: file.originalname,
+        size: file.size,
+        uploadedAt: new Date(),
+      };
+    };
+    const evidenceFrontFile = buildEvidenceFile(files.evidenceFront?.[0]);
+    const evidenceSideFile = buildEvidenceFile(files.evidenceSide?.[0]);
+    const evidenceWithPicFile = buildEvidenceFile(files.evidenceWithPic?.[0]);
+    const evidenceFile =
+      buildEvidenceFile(files.evidence?.[0]) ||
+      evidenceFrontFile ||
+      evidenceSideFile ||
+      evidenceWithPicFile ||
       null;
 
     let parsedReportData = {};
@@ -174,10 +184,14 @@ exports.completeTask = async (req, res) => {
       status: "done",
       reportType,
       reportData: parsedReportData,
-      evidence,
-      evidenceFront,
-      evidenceSide,
-      evidenceWithPic,
+      evidence: null,
+      evidenceFront: null,
+      evidenceSide: null,
+      evidenceWithPic: null,
+      evidenceFile,
+      evidenceFrontFile,
+      evidenceSideFile,
+      evidenceWithPicFile,
       picName,
       picPhone,
       notes,
@@ -211,6 +225,58 @@ exports.completeTask = async (req, res) => {
     res.json(task);
   } catch (err) {
     console.error("Complete task error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getEvidenceFile = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const field = String(req.params.field || "").trim();
+    const map = {
+      evidence: "evidenceFile",
+      evidenceFront: "evidenceFrontFile",
+      evidenceSide: "evidenceSideFile",
+      evidenceWithPic: "evidenceWithPicFile",
+    };
+    const mapped = map[field];
+    if (!mapped) {
+      return res.status(400).json({ message: "Field bukti tidak valid" });
+    }
+
+    const task = await Task.findById(id).select(
+      [
+        "assignedTo",
+        "completedBy",
+        `${mapped}.contentType`,
+        `${mapped}.filename`,
+        `${mapped}.size`,
+        `${mapped}.uploadedAt`,
+        `+${mapped}.data`,
+      ].join(" ")
+    );
+    if (!task) return res.status(404).json({ message: "Task tidak ditemukan" });
+
+    const role = String(req.user?.role || "");
+    const userId = String(req.user?.id || "");
+    const canAccess =
+      role === "manager" ||
+      role === "officer" ||
+      String(task.assignedTo || "") === userId ||
+      String(task.completedBy || "") === userId;
+    if (!canAccess) return res.status(403).json({ message: "Akses ditolak" });
+
+    const file = task[mapped];
+    if (!file || !file.data) {
+      return res.status(404).json({ message: "File bukti tidak ditemukan" });
+    }
+
+    res.setHeader("Content-Type", file.contentType || "application/octet-stream");
+    const safeName = String(file.filename || `${field}.bin`).replace(/[\r\n"]/g, "_");
+    res.setHeader("Content-Disposition", `inline; filename="${safeName}"`);
+    res.send(file.data);
+  } catch (err) {
+    console.error("Get evidence file error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

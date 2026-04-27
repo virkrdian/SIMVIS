@@ -15,7 +15,8 @@ const attendanceSchema = new mongoose.Schema({
     location: {
       latitude: Number,
       longitude: Number,
-      address: String
+      address: String,
+      accuracy: Number
     },
     photo: String // URL to photo if needed later
   },
@@ -24,7 +25,8 @@ const attendanceSchema = new mongoose.Schema({
     location: {
       latitude: Number,
       longitude: Number,
-      address: String
+      address: String,
+      accuracy: Number
     },
     photo: String
   },

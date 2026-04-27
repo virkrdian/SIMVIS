@@ -17,10 +17,36 @@ const normalizeFileNamePart = (value) => {
 export const getEvidenceLinks = (task, apiUrl) => {
   const build = (p) => (p ? joinUrl(apiUrl, p) : null);
   const links = [];
-  const front = build(task?.evidenceFront);
-  const side = build(task?.evidenceSide);
-  const withPic = build(task?.evidenceWithPic);
-  const legacy = build(task?.evidence);
+  const taskId = task?._id;
+  const token = (() => {
+    try {
+      return localStorage.getItem("token");
+    } catch {
+      return null;
+    }
+  })();
+  const byApi = (field) => {
+    if (!taskId) return null;
+    const url = joinUrl(apiUrl, `api/tasks/${taskId}/evidence/${field}`);
+    return token ? `${url}?token=${encodeURIComponent(token)}` : url;
+  };
+
+  const front =
+    task?.evidenceFrontFile?.contentType || task?.evidenceFrontFile?.filename
+      ? byApi("evidenceFront")
+      : build(task?.evidenceFront);
+  const side =
+    task?.evidenceSideFile?.contentType || task?.evidenceSideFile?.filename
+      ? byApi("evidenceSide")
+      : build(task?.evidenceSide);
+  const withPic =
+    task?.evidenceWithPicFile?.contentType || task?.evidenceWithPicFile?.filename
+      ? byApi("evidenceWithPic")
+      : build(task?.evidenceWithPic);
+  const legacy =
+    task?.evidenceFile?.contentType || task?.evidenceFile?.filename
+      ? byApi("evidence")
+      : build(task?.evidence);
 
   if (front) links.push({ label: "Depan", url: front });
   if (side) links.push({ label: "Samping", url: side });

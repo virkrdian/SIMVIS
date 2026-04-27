@@ -1,8 +1,14 @@
 const Attendance = require('../models/attendance');
+const { reverseGeocode } = require("../utils/geocode");
 
 // Helper to get current date string YYYY-MM-DD
 const getDateString = () => {
   return new Date().toISOString().split('T')[0];
+};
+
+const toNumber = (v) => {
+  const n = typeof v === "string" ? Number(v) : v;
+  return Number.isFinite(n) ? n : null;
 };
 
 exports.getTodayStatus = async (req, res) => {
@@ -36,9 +42,12 @@ exports.getTodayStatus = async (req, res) => {
 
 exports.clockIn = async (req, res) => {
   try {
-    const { latitude, longitude, address } = req.body;
-    
-    if (latitude === undefined || longitude === undefined) {
+    const { latitude, longitude, address, accuracy } = req.body;
+    const lat = toNumber(latitude);
+    const lon = toNumber(longitude);
+    const acc = toNumber(accuracy);
+
+    if (lat === null || lon === null) {
       return res.status(400).json({ message: "Koordinat lokasi wajib disertakan" });
     }
 
@@ -50,12 +59,22 @@ exports.clockIn = async (req, res) => {
       return res.status(400).json({ message: 'Anda sudah absen masuk hari ini' });
     }
     
+    let resolvedAddress = String(address || "").trim();
+    const isPlaceholder =
+      !resolvedAddress ||
+      resolvedAddress.toLowerCase().startsWith("lat:") ||
+      resolvedAddress.toLowerCase().includes("(gps)");
+    if (isPlaceholder) {
+      const lookedUp = await reverseGeocode(lat, lon).catch(() => null);
+      if (lookedUp) resolvedAddress = lookedUp;
+    }
+
     attendance = new Attendance({
       user: req.user.id,
       date: today,
       clockIn: {
         time: new Date(),
-        location: { latitude, longitude, address }
+        location: { latitude: lat, longitude: lon, address: resolvedAddress, accuracy: acc }
       }
     });
     
@@ -68,9 +87,12 @@ exports.clockIn = async (req, res) => {
 
 exports.clockOut = async (req, res) => {
   try {
-    const { latitude, longitude, address } = req.body;
-    
-    if (latitude === undefined || longitude === undefined) {
+    const { latitude, longitude, address, accuracy } = req.body;
+    const lat = toNumber(latitude);
+    const lon = toNumber(longitude);
+    const acc = toNumber(accuracy);
+
+    if (lat === null || lon === null) {
       return res.status(400).json({ message: "Koordinat lokasi wajib disertakan" });
     }
 
@@ -86,9 +108,19 @@ exports.clockOut = async (req, res) => {
       return res.status(400).json({ message: 'Anda sudah absen pulang hari ini' });
     }
     
+    let resolvedAddress = String(address || "").trim();
+    const isPlaceholder =
+      !resolvedAddress ||
+      resolvedAddress.toLowerCase().startsWith("lat:") ||
+      resolvedAddress.toLowerCase().includes("(gps)");
+    if (isPlaceholder) {
+      const lookedUp = await reverseGeocode(lat, lon).catch(() => null);
+      if (lookedUp) resolvedAddress = lookedUp;
+    }
+
     attendance.clockOut = {
       time: new Date(),
-      location: { latitude, longitude, address }
+      location: { latitude: lat, longitude: lon, address: resolvedAddress, accuracy: acc }
     };
     
     await attendance.save();
@@ -104,6 +136,18 @@ exports.getHistory = async (req, res) => {
       .sort({ date: -1 })
       .limit(30);
     res.json(history);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getAllToday = async (req, res) => {
+  try {
+    const today = getDateString();
+    const list = await Attendance.find({ date: today })
+      .populate("user", "name email role employeeId agentCode")
+      .sort({ "clockIn.time": -1, createdAt: -1 });
+    res.json(list);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

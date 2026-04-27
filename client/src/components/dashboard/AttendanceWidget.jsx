@@ -41,6 +41,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
             resolve({
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy,
             });
           },
           (error) => {
@@ -73,22 +74,13 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
   const handleClockIn = async () => {
     setLoading(true);
     try {
-      let location = { latitude: null, longitude: null, address: "" };
-      try {
-        const pos = await getLocation();
-        location = {
-          latitude: pos.latitude,
-          longitude: pos.longitude,
-          address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
-        };
-      } catch (locErr) {
-        console.warn("Geolocation failed:", locErr);
-        location = {
-          latitude: null,
-          longitude: null,
-          address: String(locErr || "Lokasi tidak tersedia"),
-        };
-      }
+      const pos = await getLocation();
+      const location = {
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        accuracy: pos.accuracy,
+        address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
+      };
 
       const res = await fetch(`${API_URL}/api/attendance/clock-in`, {
         method: "POST",
@@ -99,6 +91,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
         body: JSON.stringify({
           latitude: location.latitude,
           longitude: location.longitude,
+          accuracy: location.accuracy,
           address: location.address,
         }),
       });
@@ -119,22 +112,13 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
   const handleClockOut = async () => {
     setLoading(true);
     try {
-      let location = { latitude: null, longitude: null, address: "" };
-      try {
-        const pos = await getLocation();
-        location = {
-          latitude: pos.latitude,
-          longitude: pos.longitude,
-          address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
-        };
-      } catch (locErr) {
-        console.warn("Geolocation failed:", locErr);
-        location = {
-          latitude: null,
-          longitude: null,
-          address: String(locErr || "Lokasi tidak tersedia"),
-        };
-      }
+      const pos = await getLocation();
+      const location = {
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        accuracy: pos.accuracy,
+        address: `Lat: ${pos.latitude}, Lon: ${pos.longitude} (GPS)`,
+      };
 
       const res = await fetch(`${API_URL}/api/attendance/clock-out`, {
         method: "POST",
@@ -145,6 +129,7 @@ export default function AttendanceWidget({ API_URL, authHeader }) {
         body: JSON.stringify({
           latitude: location.latitude,
           longitude: location.longitude,
+          accuracy: location.accuracy,
           address: location.address,
         }),
       });

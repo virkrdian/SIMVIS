@@ -11,3 +11,16 @@ exports.geocodeAddress = async (address) => {
   if (!data || !data[0]) return null;
   return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 };
+
+exports.reverseGeocode = async (latitude, longitude) => {
+  const lat = Number(latitude);
+  const lon = Number(longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
+    lat
+  )}&lon=${encodeURIComponent(lon)}`;
+  const res = await fetch(url, { headers: { "User-Agent": "SIMVIS/1.0" } });
+  const data = await res.json().catch(() => null);
+  const name = String(data?.display_name || "").trim();
+  return name || null;
+};

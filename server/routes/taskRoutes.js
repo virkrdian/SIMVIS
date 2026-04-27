@@ -1,16 +1,32 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 const {
   getTasks,
   addTask,
   addBulkTasks,
   completeTask,
+  getEvidenceFile,
   progressTask,
   addComment,
 } = require("../controllers/taskController");
 const auth = require("../middleware/authMiddleware");
 const role = require("../middleware/roleMiddleware");
 const upload = require("../middleware/uploadMiddleware");
+
+const authFromHeaderOrQuery = (req, res, next) => {
+  const header = req.headers.authorization;
+  const queryToken = req.query?.token;
+  const token = header?.startsWith("Bearer ") ? header.split(" ")[1] : queryToken;
+  if (!token) return res.status(401).json({ message: "Token tidak ada" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ message: "Token tidak valid" });
+  }
+};
 
 // GET ALL TASKS
 router.get("/", auth, getTasks);
@@ -34,6 +50,8 @@ router.put(
   ]),
   completeTask
 );
+
+router.get("/:id/evidence/:field", authFromHeaderOrQuery, getEvidenceFile);
 
 // AR: progress task
 router.put("/:id/progress", auth, role("ar", "sales"), progressTask);

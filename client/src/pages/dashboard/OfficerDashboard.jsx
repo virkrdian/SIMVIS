@@ -838,6 +838,7 @@ export default function OfficerDashboard() {
                             const loc = att.clockOut?.location || att.clockIn?.location;
                             const lat = loc?.latitude;
                             const lon = loc?.longitude;
+                            const acc = loc?.accuracy;
                             const hasCoords =
                               Number.isFinite(Number(lat)) && Number.isFinite(Number(lon));
                             const address = String(loc?.address || "").trim();
@@ -846,6 +847,8 @@ export default function OfficerDashboard() {
                               address.toLowerCase().includes("(manual/gps)");
                             const normalizedLat = Number(lat);
                             const normalizedLon = Number(lon);
+                            const normalizedAcc = Number(acc);
+                            const hasAcc = Number.isFinite(normalizedAcc) && normalizedAcc > 0;
                             const isZeroCoords = normalizedLat === 0 && normalizedLon === 0;
 
                             const url =
@@ -859,7 +862,12 @@ export default function OfficerDashboard() {
                                     )}`
                                   : null;
                             const label =
-                              address || (hasCoords ? `${normalizedLat}, ${normalizedLon}` : "-");
+                              address ||
+                              (hasCoords
+                                ? `${normalizedLat}, ${normalizedLon}${
+                                    hasAcc ? ` (±${Math.round(normalizedAcc)}m)` : ""
+                                  }`
+                                : "-");
 
                             if (!url) return label;
 

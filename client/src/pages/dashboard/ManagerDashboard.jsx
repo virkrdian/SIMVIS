@@ -541,6 +541,51 @@ export default function ManagerDashboard() {
           </button>
         </div>
 
+        <div className="md:hidden w-full mt-3">
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                activeTab === "overview"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              📊 Analytics
+            </button>
+            <button
+              onClick={() => setActiveTab("attendance")}
+              className={`px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                activeTab === "attendance"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              🕒 Kehadiran
+            </button>
+            <button
+              onClick={() => setActiveTab("tasks")}
+              className={`px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                activeTab === "tasks"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              📝 Tugas
+            </button>
+            <button
+              onClick={() => setActiveTab("officers")}
+              className={`px-3 py-2 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
+                activeTab === "officers"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              👥 User
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center gap-4">
           <img
             src={rightLogoFailed ? FALLBACK_RIGHT_LOGO : BRAND_RIGHT_LOGO_URL}
